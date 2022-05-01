@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+//from ProtocolBuffersExample directory compile this as follows:
+//protoc --java_out=src/main/java/ protos/messageInfo.proto
+
+option java_package = "dsd.pubsub.protos";
+option java_outer_classname = "MessageInfo";
+
+message Message{
+  string key = 1;
+  bytes value = 2;
+  int32 partition = 3;
+  int32 offset = 4;
+  string topic = 5;
+}
+
+

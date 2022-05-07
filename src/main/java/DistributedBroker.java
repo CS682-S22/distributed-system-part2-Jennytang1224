@@ -68,7 +68,6 @@ public class DistributedBroker {
         private String type;
         int brokerID;
 
-
         public Receiver(String name, int port, Connection conn) {
             this.name = name;
             this.port = port;
@@ -97,9 +96,10 @@ public class DistributedBroker {
                     peerHostName = p.getHostName();
                     peerPort = p.getPortNumber();
 
-                    if (type.equals("consumer")) {
+                    if (type.equals("consumer pull") || type.equals("consumer push")) {
                         System.out.println("this broker NOW has connected to consumer: " + peerHostName + " port: " + peerPort + "\n");
                         counter++;
+
                     } else {
                         // get the messageInfo though socket
                         type = "producer"; // producer data send from load balancer directly, so no peerinfo
@@ -127,8 +127,8 @@ public class DistributedBroker {
                         }
                         counter++;
                         messageCounter++;
-                    } else if (type.equals("consumer")) {
-                        Thread th = new Thread(new SendConsumerData(conn, buffer, topicMapList, LoadBalancer.connMap, brokerID));
+                    } else if (type.equals("consumer pull")) {
+                        Thread th = new Thread(new SendConsumerDataPullBased(conn, buffer, topicMapList, LoadBalancer.connMap, brokerID));
                         th.start();
                         try {
                             th.join();
@@ -136,7 +136,17 @@ public class DistributedBroker {
                             e.printStackTrace();
                         }
                         counter++;
-                    } else {
+                    }
+                    else if (type.equals("consumer push")) {
+                        Thread th = new Thread(new SendConsumerDataPushBased(conn, buffer, topicMapList, LoadBalancer.connMap, brokerID));
+                        th.start();
+                        try {
+                            th.join();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        counter++;
+                    }else {
                         System.out.println("invalid type, should be either producer or consumer");
                     }
                 }

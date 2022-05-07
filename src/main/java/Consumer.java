@@ -1,6 +1,8 @@
 import com.google.protobuf.InvalidProtocolBufferException;
 import dsd.pubsub.protos.MessageInfo;
 import dsd.pubsub.protos.PeerInfo;
+
+import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
@@ -22,14 +24,17 @@ public class Consumer {
     private static String outputPath;
     private Receiver newReceiver;
     private static int maxPosition = 0;
+    private String method;
+    static int totalSaved = 0;
 
-    public Consumer(String brokerLocation, String topic, int startingPosition) {
+    public Consumer(String brokerLocation, String topic, int startingPosition, String method) {
         this.brokerLocation = brokerLocation;
         this.topic = topic;
         this.startingPosition = startingPosition;
         this.brokerHostName = brokerLocation.split(":")[0];
         this.brokerPort = Integer.parseInt(brokerLocation.split(":")[1]);
         this.socket = null;
+        this.method = method;
 
         try {
             this.socket = new Socket(this.brokerHostName, this.brokerPort);
@@ -42,7 +47,7 @@ public class Consumer {
 
         System.out.println("\n*** this consumer is connecting to broker " + brokerLocation + " ***");
         // draft peerinfo
-        String type = "consumer";
+        String type = "consumer " + method;
         List<Object> maps = Utilities.readConfig();
         IPMap ipMap = (IPMap) maps.get(0);
         PortMap portMap = (PortMap) maps.get(1);
@@ -123,7 +128,7 @@ public class Consumer {
             this.name = name;
             this.port = port;
             this.conn = conn;
-            this.bq = new CS601BlockingQueue<>(10000);
+            this.bq = new CS601BlockingQueue<>(100);
             this.executor = Executors.newSingleThreadExecutor();
             this.positionCounter = 0;
         }
@@ -162,7 +167,7 @@ public class Consumer {
             //application poll from bq
             while (receiving) {
                 executor.execute(add);
-                m = bq.poll(30);
+                m = bq.poll(100);
                 if (m != null) { // received within timeout
                     //save to file
                     byte[] arr = m.getValue().toByteArray();
@@ -186,6 +191,7 @@ public class Consumer {
             throws IOException {
         try (FileOutputStream fos = new FileOutputStream(fileOutput, true)) {
             System.out.println("Application is storing data to the file...");
+            System.out.println("total saved: " + ++totalSaved);
             fos.write(buf);
             fos.write(10);
             fos.flush();

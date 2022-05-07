@@ -9,7 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * broker send consumer data
  */
-public class SendConsumerData implements Runnable{
+public class SendConsumerDataPullBased implements Runnable{
     private Connection consumerConnection;
     private byte[] recordBytes;
     private static CopyOnWriteArrayList<byte[]> topicList;
@@ -22,7 +22,7 @@ public class SendConsumerData implements Runnable{
     private int brokerID;
 
 
-    public SendConsumerData(Connection consumerConnection, byte[] recordBytes, List<HashMap<String, HashMap<Integer,
+    public SendConsumerDataPullBased(Connection consumerConnection, byte[] recordBytes, List<HashMap<String, HashMap<Integer,
             CopyOnWriteArrayList<byte[]>>>> topicMapList, HashMap<Integer, Connection> connMap, int brokerID){
         this.consumerConnection = consumerConnection;
         this.recordBytes = recordBytes;

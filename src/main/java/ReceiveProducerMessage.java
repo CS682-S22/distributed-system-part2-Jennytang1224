@@ -4,6 +4,7 @@ import dsd.pubsub.protos.MessageInfo;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -19,7 +20,7 @@ public class ReceiveProducerMessage implements Runnable{
     private int numOfPartitions;
     private HashMap<Integer, Connection> connMap;
     private HashMap<String, Integer> counterMap;
-    private static HashMap<String, HashMap<Integer, CopyOnWriteArrayList<byte[]>>> topicMap;
+    private static HashMap<String, HashMap<Integer, List<byte[]>>> topicMap;
 
     public ReceiveProducerMessage( byte[] recordBytes, int messageCounter,
                                    int offsetInMem, int numOfBrokers, int numOfPartitions, HashMap<Integer, Connection> connMap, HashMap<String, Integer> counterMap) {

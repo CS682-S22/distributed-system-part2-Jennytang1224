@@ -26,6 +26,9 @@ public class Consumer {
     private static int maxPosition = 0;
     private String method;
     static int totalSaved = 0;
+    static long startTime;
+    static long endTime;
+    static long duration;
 
     public Consumer(String brokerLocation, String topic, int startingPosition, String method) {
         this.brokerLocation = brokerLocation;
@@ -111,6 +114,14 @@ public class Consumer {
         return newReceiver.receiverCounter;
     }
 
+    public void setReceiverCounter(int newCounter) {
+        newReceiver.receiverCounter = newCounter;
+    }
+
+    public void setMaxPosition(int newCounter) {
+         maxPosition= newCounter;
+    }
+
     /**
      * inner class Receiver
      */
@@ -148,6 +159,10 @@ public class Consumer {
                 byte[] result = conn.receive();
                 if (result != null) {
                     try {
+                        System.out.println("num of data: " + ++totalSaved);
+                        if(totalSaved == 1){
+                            startTime = System.nanoTime();
+                        }
                         bq.put(MessageInfo.Message.parseFrom(result));
                         receiverCounter++;
                         int id = MessageInfo.Message.parseFrom(result).getOffset();
@@ -179,10 +194,19 @@ public class Consumer {
                 }
                 else{
 //                    System.out.println("m == null");
+                    break;
                 }
             }
+            endTime = System.nanoTime();
+            duration = (endTime - startTime)/1000000; // sec
+            System.out.println("**************Execution time in seconds: " + duration);
+
         }
     }
+
+
+
+
 
     /**
      * write bytes to files
@@ -191,7 +215,6 @@ public class Consumer {
             throws IOException {
         try (FileOutputStream fos = new FileOutputStream(fileOutput, true)) {
             System.out.println("Application is storing data to the file...");
-            System.out.println("total saved: " + ++totalSaved);
             fos.write(buf);
             fos.write(10);
             fos.flush();
@@ -200,4 +223,11 @@ public class Consumer {
             System.out.println("file writing error :(");
         }
     }
+
+
+
+    public long getDuration(){
+        return duration;
+    }
+
 }

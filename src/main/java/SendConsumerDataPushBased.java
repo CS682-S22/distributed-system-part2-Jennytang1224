@@ -12,13 +12,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class SendConsumerDataPushBased implements Runnable{
     private Connection consumerConnection;
     private byte[] recordBytes;
-    private static CopyOnWriteArrayList<byte[]> topicList;
-    private HashMap<Integer, CopyOnWriteArrayList<byte[]>> partitionMap;
-    private HashMap<String, HashMap<Integer, CopyOnWriteArrayList<byte[]>>> topicMap;
+    private static List<byte[]> topicList;
+    private HashMap<Integer, List<byte[]>> partitionMap;
+    private HashMap<String, HashMap<Integer, List<byte[]>>> topicMap;
     private int startingPosition;
     private String topic;
     private HashMap<Integer, Connection> connMap;
-    private List<HashMap<String, HashMap<Integer, CopyOnWriteArrayList<byte[]>>>> topicMapList;
+    private List<HashMap<String, HashMap<Integer, List<byte[]>>>> topicMapList;
     private int brokerID;
     private boolean sending = true;
     int counter = 0;
@@ -29,7 +29,7 @@ public class SendConsumerDataPushBased implements Runnable{
 
 
     public SendConsumerDataPushBased(Connection consumerConnection, byte[] recordBytes, List<HashMap<String, HashMap<Integer,
-            CopyOnWriteArrayList<byte[]>>>> topicMapList, HashMap<Integer, Connection> connMap, int brokerID){
+            List<byte[]>>>> topicMapList, HashMap<Integer, Connection> connMap, int brokerID){
         this.consumerConnection = consumerConnection;
         this.recordBytes = recordBytes;
         this.connMap = connMap;
@@ -64,7 +64,7 @@ public class SendConsumerDataPushBased implements Runnable{
                         partitionMap = topicMap.get(topic);
                         System.out.println("there are " + partitionMap.size() + " partitions in this consumer with topic: " + topic);
 
-                        for (Map.Entry<Integer, CopyOnWriteArrayList<byte[]>> entry : partitionMap.entrySet()) {
+                        for (Map.Entry<Integer, List<byte[]>> entry : partitionMap.entrySet()) {
                             topicList = entry.getValue();
                             // start getting the all record from this topic from starting position
                             for (int j = 0; j < topicList.size(); j++) {
@@ -101,7 +101,7 @@ public class SendConsumerDataPushBased implements Runnable{
                     partitionMap = topicMap.get(topic);
                     System.out.println("there are " + partitionMap.size() + " partitions in this consumer with topic: " + topic);
                     //get total number of messages in partition map now
-                    for (Map.Entry<Integer, CopyOnWriteArrayList<byte[]>> entry : partitionMap.entrySet()) {
+                    for (Map.Entry<Integer, List<byte[]>> entry : partitionMap.entrySet()) {
                         topicList = entry.getValue();
                         for (int j = 0; j < topicList.size(); j++) {
                             currentSize++;
@@ -116,7 +116,7 @@ public class SendConsumerDataPushBased implements Runnable{
                         startingPosition = lastSentMessageID + 1;
                         previousSize = 0;
 
-                        for (Map.Entry<Integer, CopyOnWriteArrayList<byte[]>> entry : partitionMap.entrySet()) {
+                        for (Map.Entry<Integer, List<byte[]>> entry : partitionMap.entrySet()) {
                             topicList = entry.getValue();
                             // start getting the all record from this topic from starting position
                             for (int j = 0; j < topicList.size(); j++) {

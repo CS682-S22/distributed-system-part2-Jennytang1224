@@ -3,6 +3,7 @@ import dsd.pubsub.protos.PeerInfo;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Collections;
 /**
  * broker class
  */
@@ -14,9 +15,11 @@ public class DistributedBroker {
     private static String peerHostName;
     private static int peerPort;
     private static int messageCounter = 0;
-    private static List<HashMap<String,HashMap<Integer, CopyOnWriteArrayList<byte[]>>>> topicMapList = new ArrayList<>();
-    private static HashMap<String, HashMap<Integer, CopyOnWriteArrayList<byte[]>>> topicMap;
+    private static List<HashMap<String,HashMap<Integer, List<byte[]>>>> topicMapList = new ArrayList<>();
+    //private static List<HashMap<String,HashMap<Integer, CopyOnWriteArrayList<byte[]>>>> topicMapList = new ArrayList<>();
+    private static HashMap<String, HashMap<Integer, List<byte[]>>> topicMap;
     private static String brokerConfig;
+    static boolean firstTime;
 
     public DistributedBroker(String hostName, int port, String brokerConfig) {
         this.hostName = hostName;
@@ -32,7 +35,6 @@ public class DistributedBroker {
      * use threads to start the connections, receive and send data concurrently
      */
     public void run() throws IOException {
-
         Thread serverListener = new Thread(() -> {
             boolean running = true;
             try {
@@ -104,7 +106,9 @@ public class DistributedBroker {
                         // get the messageInfo though socket
                         type = "producer"; // producer data send from load balancer directly, so no peerinfo
                         System.out.println(">> this Broker now has connected to producer ");
-                        Thread th = new Thread(new ReceiveProducerData(buffer, topicMapList, brokerID));
+                        firstTime = true;
+                        Thread th = new Thread(new ReceiveProducerData(buffer, topicMapList, brokerID, firstTime));
+                        firstTime = false;
                         th.start();
                         try {
                             th.join();
@@ -118,7 +122,7 @@ public class DistributedBroker {
                 }
                 else{ // when receiving data
                     if (type.equals("producer")) {
-                        Thread th = new Thread(new ReceiveProducerData(buffer, topicMapList, brokerID));
+                        Thread th = new Thread(new ReceiveProducerData(buffer, topicMapList, brokerID, firstTime));
                         th.start();
                         try {
                             th.join();

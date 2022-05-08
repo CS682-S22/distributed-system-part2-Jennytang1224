@@ -16,7 +16,7 @@ public class LoadBalancer {
     private DataInputStream input;
     private DataOutputStream output;
     private static volatile boolean running = true;
-    private static HashMap<String, HashMap<Integer, CopyOnWriteArrayList<byte[]>>> topicMap;
+    private static HashMap<String, HashMap<Integer, List<byte[]>>> topicMap;
     private static Server server;
     private Connection connection;
     private static String peerHostName;

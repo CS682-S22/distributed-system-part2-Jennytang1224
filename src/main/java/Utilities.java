@@ -17,7 +17,7 @@ public class Utilities {
     static String InfoFileName = "files/InfoMap";
     static String offsetFilePath = "files/idMapOffset";
     private static String hostname;
-    static int numOfBrokersInSys = 3;
+    static int numOfBrokersInSys = 5;
     static String LBLocation = "Jennys-MacBook-Pro.local:1411";
     static String brokerConfigFile = "files/brokerConfig.json";
 

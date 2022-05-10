@@ -93,7 +93,7 @@ public class SendConsumerDataPushBased implements Runnable{
                 }
                 counter++;
             }
-            else {// if theres more data got producer
+            else {// if theres more data got from producer
                 topicMap = topicMapList.get(brokerID - 1);
                 if (!topicMap.containsKey(topic)) {
                     //System.out.println("No topic called '" + topic + "' in this broker!");

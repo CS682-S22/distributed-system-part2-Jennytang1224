@@ -15,8 +15,9 @@ public class RunProducer {
 //        if(!Utilities.validateArgsProducer(args)){
 //            System.exit(-1);
 //        }
-        String LBLocation = Utilities.LBLocation;
+
         String filepath = args[0];
+        String LBLocation = args[1];
         // Open a connection to the Broker by creating a new Producer object
         // send producer identity to broker
         Producer producer = new Producer(LBLocation);

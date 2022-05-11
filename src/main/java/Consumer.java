@@ -139,7 +139,7 @@ public class Consumer {
             this.name = name;
             this.port = port;
             this.conn = conn;
-            this.bq = new CS601BlockingQueue<>(10000);
+            this.bq = new CS601BlockingQueue<>(1000);
             this.executor = Executors.newSingleThreadExecutor();
             this.positionCounter = 0;
         }
@@ -182,7 +182,7 @@ public class Consumer {
             //application poll from bq
             while (receiving) {
                 executor.execute(add);
-                m = bq.poll(100);
+                m = bq.poll(30);
                 if (m != null) { // received within timeout
                     //save to file
                     byte[] arr = m.getValue().toByteArray();

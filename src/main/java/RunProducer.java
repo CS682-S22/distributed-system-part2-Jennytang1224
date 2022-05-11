@@ -35,18 +35,18 @@ public class RunProducer {
             while ((strLine = br.readLine()) != null)   {
                 if (strLine.contains("GET /image/") || strLine.contains("GET /product/")) {
                     data = ByteString.copyFromUtf8(strLine);
-                    System.out.println(strLine);
+                   // System.out.println(strLine);
                     Pattern pattern =  Pattern.compile("GET /(.+?)/(.+?)/");
                     Matcher m =  pattern.matcher(strLine);
                     m.find();
                     topic = m.group(1);
                     key = m.group(2);
-                    System.out.println(topic);
-                    System.out.println(key);
+                   // System.out.println(topic);
+                   // System.out.println(key);
                     if (key.length() < 10) { // sanity check
                         // build protobuffer
                         offset = data.size(); // increase by offset
-                        System.out.println("set offset: " + offset);
+                        //System.out.println("set offset: " + offset);
                         MessageInfo.Message record = MessageInfo.Message.newBuilder()
                                 .setTopic(topic)
                                 .setKey(key)

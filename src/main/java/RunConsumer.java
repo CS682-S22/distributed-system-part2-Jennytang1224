@@ -1,6 +1,8 @@
 import javax.sound.midi.Soundbank;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * run consumer
  */
@@ -25,7 +27,7 @@ public class RunConsumer {
             int requestCounter = 0;
             int start = 0;
             int max = 0;
-            int receiveCounter = 0;
+            AtomicInteger receiveCounter = new AtomicInteger(0);
             int lastReceivedCounter = 0;
 
 
@@ -43,17 +45,20 @@ public class RunConsumer {
 //                    consumer.setMaxPosition(max);
 
                     if (method.equals("pull")) {
-                        if (requestCounter == 0) {
-                            receiveCounter = consumer.getReceiverCounter() + startingPosition - 1;
-                        } else {
-                            receiveCounter += (consumer.getReceiverCounter() - lastReceivedCounter);
+                        if (requestCounter == 0) {//first time
+                            //receiveCounter = consumer.getReceiverCounter() + startingPosition - 1;
+                            receiveCounter.set(consumer.getReceiverCounter() + startingPosition - 1);
+                        } else { // not first time
+                           // receiveCounter += (consumer.getReceiverCounter() - lastReceivedCounter);
+                            int tmp = receiveCounter.intValue() + consumer.getReceiverCounter() - lastReceivedCounter;
+                            receiveCounter.set(tmp);
                         }
 
                         if (consumer.getMaxPosition() >= max) {
                             max = consumer.getMaxPosition();
                         }
-                        System.out.println("max: " + max + ", receiverCounter: " + (receiveCounter - 1));
-                        if (max - start == receiveCounter - 1) { // get through all brokers
+                        System.out.println("max: " + max + ", receiverCounter: " + (receiveCounter));
+                        if (max - start == receiveCounter.intValue()) { // get through all brokers
                             if (requestCounter != 0) { // not first time
                                 startingPosition = max + 1;
                             } // else if first time, will use input starting position
@@ -75,7 +80,7 @@ public class RunConsumer {
                     requestCounter++;
 
                     System.out.println("outside for loop: " + "max: " + max + ", receiverCounter: " + receiveCounter);
-                    if (max - start != receiveCounter) {
+                    if (max - start != receiveCounter.intValue()) {
                         // miss brokers -> no increment on starting position
                     } else {
                         if (requestCounter != 0) { // not first time

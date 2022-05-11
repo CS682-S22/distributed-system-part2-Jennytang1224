@@ -8,6 +8,8 @@ import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * consumer class
  */
@@ -111,11 +113,11 @@ public class Consumer {
      * get Receiver counter
      */
     public int getReceiverCounter(){
-        return newReceiver.receiverCounter;
+        return newReceiver.receiverCounter.intValue();
     }
 
     public void setReceiverCounter(int newCounter) {
-        newReceiver.receiverCounter = newCounter;
+        newReceiver.receiverCounter = new AtomicInteger(newCounter);
     }
 
     public void setMaxPosition(int newCounter) {
@@ -133,7 +135,7 @@ public class Consumer {
         private CS601BlockingQueue<MessageInfo.Message> bq;
         private ExecutorService executor;
         int positionCounter;
-        static int receiverCounter = 0;
+        static AtomicInteger receiverCounter = new AtomicInteger(0);
 
         public Receiver(String name, int port, Connection conn) {
             this.name = name;
@@ -149,7 +151,7 @@ public class Consumer {
         }
 
         public int receiverCounter(){
-            return receiverCounter;
+            return receiverCounter.intValue();
         }
 
         @Override
@@ -164,7 +166,7 @@ public class Consumer {
                             startTime = System.nanoTime();
                         }
                         bq.put(MessageInfo.Message.parseFrom(result));
-                        receiverCounter++;
+                        receiverCounter.incrementAndGet();
                         int id = MessageInfo.Message.parseFrom(result).getOffset();
                         if(id >= maxPosition){
                             maxPosition = id;
@@ -194,7 +196,9 @@ public class Consumer {
                 }
                 else{
 //                    System.out.println("m == null");
-                    break;
+                    if(totalSaved != 0) {
+                        break;
+                    }
                 }
             }
             endTime = System.nanoTime();

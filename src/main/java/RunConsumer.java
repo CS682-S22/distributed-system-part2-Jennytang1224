@@ -12,13 +12,16 @@ public class RunConsumer {
         if(!Utilities.validateArgsConsumer(args)){
             System.exit(-1);
         }
+        String topic = args[0];
+        int startingPosition = Integer.parseInt(args[1]);
+        String method = args[2]; // pull or push
 
+        Consumer consumer = new Consumer(topic, startingPosition, method);
+        consumer.run();
+        /*
         long duration = 0;
     //    for(int k  = 1; k < 11; k++){
 //            System.out.println("\n\n~~~~~~~~~~~~~~~~ ROUND " + k + "\n");
-            String topic = args[0];
-            int startingPosition = Integer.parseInt(args[1]);
-            String method = args[2]; // pull or push
 
             List<Object> maps = Utilities.readBrokerConfig();
             IPMap ipMap = (IPMap) maps.get(0);
@@ -40,7 +43,7 @@ public class RunConsumer {
                     int brokerPort = Integer.parseInt(portMap.getPortById(String.valueOf(i)));
                     String brokerLocation = brokerHostName + ":" + brokerPort;
 
-                    consumer = new Consumer(brokerLocation, topic, startingPosition, method);
+                   // consumer = new Consumer(brokerLocation, topic, startingPosition, method);
 //                    consumer.setReceiverCounter(lastReceivedCounter);
 //                    consumer.setMaxPosition(max);
 
@@ -98,5 +101,8 @@ public class RunConsumer {
       //      duration += consumer.getDuration();
       //  }
       //  System.out.println("************************************ AVERGAE TIME: " + duration/10);
+        */
     }
+
+
 }

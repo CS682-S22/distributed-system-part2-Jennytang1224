@@ -61,7 +61,7 @@ public class RunConsumer {
                         consumer.subscribe(topic, startingPosition);
                         lastReceivedCounter = consumer.getReceiverCounter();
                         try { // every 1 sec request new data
-                            Thread.sleep(1000);
+                            Thread.sleep(2000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

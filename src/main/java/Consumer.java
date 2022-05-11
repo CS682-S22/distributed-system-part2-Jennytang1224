@@ -139,7 +139,7 @@ public class Consumer {
             this.name = name;
             this.port = port;
             this.conn = conn;
-            this.bq = new CS601BlockingQueue<>(1000);
+            this.bq = new CS601BlockingQueue<>(100);
             this.executor = Executors.newSingleThreadExecutor();
             this.positionCounter = 0;
         }

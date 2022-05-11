@@ -52,8 +52,8 @@ public class RunConsumer {
                         if (consumer.getMaxPosition() >= max) {
                             max = consumer.getMaxPosition();
                         }
-                        System.out.println("max: " + max + ", receiverCounter: " + receiveCounter);
-                        if (max - start == receiveCounter) { // get through all brokers
+                        System.out.println("max: " + max + ", receiverCounter: " + (receiveCounter - 1));
+                        if (max - start == receiveCounter - 1) { // get through all brokers
                             if (requestCounter != 0) { // not first time
                                 startingPosition = max + 1;
                             } // else if first time, will use input starting position
@@ -65,11 +65,10 @@ public class RunConsumer {
                         consumer.subscribe(topic, startingPosition);
                     }
                     try { // every 2 sec request new data
-                        Thread.sleep(1000);
+                        Thread.sleep(2000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-
                 }
 
                 if (method.equals("pull")) {
@@ -89,9 +88,6 @@ public class RunConsumer {
                 } else if (method.equals("push")) {
                     break;
                 }
-
-
-
 
             }
       //      duration += consumer.getDuration();

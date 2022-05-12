@@ -27,7 +27,7 @@ public class Consumer implements Runnable{
     private Receiver newReceiver;
     private static int maxPosition = 0;
     private String method;
-    static int totalSaved = 0;
+    static AtomicInteger totalSaved = new AtomicInteger(0);
     static long startTime;
     static long endTime;
     static long duration;
@@ -55,7 +55,7 @@ public class Consumer implements Runnable{
         int lastReceivedCounter = 0;
 
         //connect to each broker and ask for data
-        while(true) {
+      //  while(true) {
             for (int i = 1; i <= Utilities.numOfBrokersInSys; i++) { // loop though num of brokers
                 // Connect to the consumer
                 //                System.out.println("\nStarting position: " + startingPosition);
@@ -99,7 +99,11 @@ public class Consumer implements Runnable{
                 outputPath = "files/" + type + "_" + peerHostName + "_" + peerPort + "_output";
                 System.out.println("consumer sends first msg to broker with its identity...\n");
 
-
+                try { // every 2 sec request new data
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
                 if (method.equals("pull")) {
                     if (requestCounter == 0) {//first time
@@ -118,9 +122,12 @@ public class Consumer implements Runnable{
                     if (max - start == receiveCounter.intValue()) { // get through all brokers
                         if (requestCounter != 0) { // not first time
                             startingPosition = max + 1;
+
                         } // else if first time, will use input starting position
-                        if(max !=0) {
+                        if(max != 0) {
+                           // break;
                             System.exit(0);
+
                         }
                     }
                     subscribe(topic, startingPosition);
@@ -130,30 +137,35 @@ public class Consumer implements Runnable{
                     subscribe(topic, startingPosition);
                 }
                 try { // every 2 sec request new data
-                    Thread.sleep(3000);
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
             }
-            if (method.equals("pull")) {
-                requestCounter++;
-
-                System.out.println("outside for loop: " + "max: " + max + ", receiverCounter: " + receiveCounter);
-                if (max - start != receiveCounter.intValue()) {
-                    // miss brokers -> no increment on starting position
-                } else {
-                    if (requestCounter != 0) { // not first time
-                        startingPosition = max + 1;
-
-                    } // else if first time, will use input starting position
-                    break;
-                }
-
-            } else if (method.equals("push")) {
-                break;
-            }
-        }
+//            if (method.equals("pull")) {
+//                requestCounter++;
+//
+//                System.out.println("outside for loop: " + "max: " + max + ", receiverCounter: " + receiveCounter);
+//                if (max - start != receiveCounter.intValue()) {
+//                    // miss brokers -> no increment on starting position
+//                } else {
+//                    if (requestCounter != 0) { // not first time
+//                        startingPosition = max + 1;
+//
+//                    } // else if first time, will use input starting position
+//                    break;
+//                }
+//
+//            }
+//            else if (method.equals("push")) {
+//                try { // every 2 sec request new data
+//                    Thread.sleep(5000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                break;
+//            }
+    //    }
 
 
     }
@@ -221,7 +233,7 @@ public class Consumer implements Runnable{
             this.name = name;
             this.port = port;
             this.conn = conn;
-            this.bq = new CS601BlockingQueue<>(100);
+            this.bq = new CS601BlockingQueue<>(500000);
             this.executor = Executors.newSingleThreadExecutor();
             this.positionCounter = 0;
         }
@@ -241,11 +253,11 @@ public class Consumer implements Runnable{
                 byte[] result = conn.receive();
                 if (result != null) {
                     try {
-                        System.out.println("num of data: " + ++totalSaved);
-                        if(totalSaved == 1){
+                        if(totalSaved.intValue() == 0){
                             startTime = System.nanoTime();
                         }
                         bq.put(MessageInfo.Message.parseFrom(result));
+                        System.out.println("num of data: " + totalSaved.incrementAndGet());
                         receiverCounter.incrementAndGet();
                         int id = MessageInfo.Message.parseFrom(result).getOffset();
                         if(id >= maxPosition){
@@ -253,7 +265,7 @@ public class Consumer implements Runnable{
                         }
                         System.out.println(" ---> Consumer added a record to the blocking queue...");
                     } catch (InvalidProtocolBufferException e) {
-                        e.printStackTrace();
+                       // e.printStackTrace();
                     }
                 }
                 else{
@@ -264,7 +276,7 @@ public class Consumer implements Runnable{
             //application poll from bq
             while (receiving) {
                 executor.execute(add);
-                m = bq.poll(30);
+                m = bq.poll(1);
                 if (m != null) { // received within timeout
                     //save to file
                     byte[] arr = m.getValue().toByteArray();
@@ -274,11 +286,11 @@ public class Consumer implements Runnable{
                         e.printStackTrace();
                     }
                 }
-                else{
-//                    System.out.println("m == null");
-                    if(totalSaved != 0) {
-                        break;
-                    }
+                else{ //nothing receives
+                  //  System.out.println("m == null");
+//                    if(totalSaved.intValue() != 0) {
+//                        break;
+//                    }
                 }
             }
             endTime = System.nanoTime();

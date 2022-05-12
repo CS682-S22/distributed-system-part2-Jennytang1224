@@ -26,6 +26,7 @@ public class SendConsumerDataPushBased implements Runnable{
     int lastSentMessageID = 0;
     int currentSize = 0;
     int previousSize = 0;
+    int msgCounter = 0;
 
 
     public SendConsumerDataPushBased(Connection consumerConnection, byte[] recordBytes, List<HashMap<String, HashMap<Integer,
@@ -57,13 +58,17 @@ public class SendConsumerDataPushBased implements Runnable{
                     startingPosition = d.getOffset();
                     System.out.println("Broker: " + brokerID + " -> Consumer subscribed to: " + topic + ", at position: " + startingPosition);
 
-                    System.out.println("consumer topic map: " + topicMap);
+                 //   System.out.println("consumer topic map: " + topicMap);
                     if (!topicMap.containsKey(topic)) {
                         System.out.println("No topic called '" + topic + "' in this broker!");
                     } else {
                         partitionMap = topicMap.get(topic);
                         System.out.println("there are " + partitionMap.size() + " partitions in this consumer with topic: " + topic);
-
+//                        try {
+//                            Thread.sleep(1000);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
                         for (Map.Entry<Integer, List<byte[]>> entry : partitionMap.entrySet()) {
                             topicList = entry.getValue();
                             // start getting the all record from this topic from starting position
@@ -82,9 +87,14 @@ public class SendConsumerDataPushBased implements Runnable{
                                     if(lastSentMessageID < id) {
                                         lastSentMessageID = id;
                                     }
-                                    System.out.println("New data in partition: " + entry.getKey() + " - record " + id + " has been sent to the consumer \n");
+                                    System.out.println("New data in partition: " + entry.getKey() + ", and " + ++msgCounter + " messages has been sent to the consumer \n");
+//                                    try {
+//                                        Thread.sleep(1000);
+//                                    } catch (InterruptedException e) {
+//                                        e.printStackTrace();
+//                                    }
                                 }
-                                System.out.println("no new data in partition: " + entry.getKey() + "\n");
+                               // System.out.println("no new data in partition: " + entry.getKey() + "\n");
                             }
                         }
                     }
@@ -130,17 +140,20 @@ public class SendConsumerDataPushBased implements Runnable{
                                 previousSize++;
                                 if ((id > 0) && (id >= startingPosition)) { // in each list if there's item id > last item id, send item
                                     consumerConnection.send(record);
+
                                     if(lastSentMessageID < id) {
                                         lastSentMessageID = id;
                                     }
                                    // numMessageSent++;
-                                    System.out.println("New data in partition: " + entry.getKey() + " - record " + id + " has been sent to the consumer \n");
+                                    System.out.println(entry.getKey() + ++msgCounter + " of messages has been sent to the consumer \n");
                                 }
-                                System.out.println("no new data in partition: " + entry.getKey() + "\n");
+
+                                //System.out.println("no new data in partition: " + entry.getKey() + "\n");
                             }
                         }
                     }else{
                         System.out.println("NO NEW DATA YET!!!!!!!!!!!!!!!!!!!!");
+                      //  System.exit(0);
 
                     }
                 }

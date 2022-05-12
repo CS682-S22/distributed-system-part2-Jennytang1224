@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * broker send consumer data
@@ -20,6 +21,8 @@ public class SendConsumerDataPullBased implements Runnable{
     private HashMap<Integer, Connection> connMap;
     private List<HashMap<String, HashMap<Integer, List<byte[]>>>> topicMapList;
     private int brokerID;
+    private AtomicInteger msgCounter = new AtomicInteger(0);
+    int currentSize = 0;
 
 
     public SendConsumerDataPullBased(Connection consumerConnection, byte[] recordBytes, List<HashMap<String, HashMap<Integer,
@@ -36,6 +39,7 @@ public class SendConsumerDataPullBased implements Runnable{
     public void run() {
         // get correct topicMap by brokerID
         topicMap = topicMapList.get(brokerID - 1);
+
         MessageInfo.Message d = null;
         if (recordBytes != null) {
             try {
@@ -52,8 +56,13 @@ public class SendConsumerDataPullBased implements Runnable{
                 System.out.println("No topic called '" + topic + "' in this broker!");
             } else {
                 partitionMap = topicMap.get(topic);
+                for (Map.Entry<Integer, List<byte[]>> entry : partitionMap.entrySet()) {
+                    topicList = entry.getValue();
+                    for (int j = 0; j < topicList.size(); j++) {
+                        currentSize++;
+                    }
+                }
                 System.out.println("there are " + partitionMap.size() + " partitions in this consumer with topic: " + topic);
-
                 for (Map.Entry<Integer, List<byte[]>> entry : partitionMap.entrySet()) {
                     topicList = entry.getValue();
                     // start getting the all record from this topic from starting position
@@ -65,11 +74,12 @@ public class SendConsumerDataPullBased implements Runnable{
                         } catch (InvalidProtocolBufferException e) {
                             e.printStackTrace();
                         }
-                        if ((id > 0) && (id >= startingPosition)) {
+                        if ((id > 0) && (id >= startingPosition) && (currentSize > msgCounter.intValue())) {
+                            System.out.println(currentSize + "," + msgCounter.intValue());
                             consumerConnection.send(record);
-                            System.out.println("New data in partition: " + entry.getKey() + " - A record has been sent to the consumer \n");
+                            System.out.println("New data in partition: " + entry.getKey() + " - message " + msgCounter.incrementAndGet() + " has been sent to the consumer \n");
                         }
-                        System.out.println("no new data in partition: " + entry.getKey() + "\n");
+                        //System.out.println("no new data in partition: " + entry.getKey() + "\n");
                     }
                 }
             }

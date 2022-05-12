@@ -12,14 +12,17 @@ public class ReceiveProducerData implements Runnable{
     HashMap<String, HashMap<Integer, List<byte[]>>> topicMap;
     boolean firstTime;
     List<byte[]> topicList;
+    int count;
 
 
 
-    public ReceiveProducerData(byte[] recordBytes, List<HashMap<String, HashMap<Integer, List<byte[]>>>> topicMapList, int brokerID, boolean firstTime) {
+    public ReceiveProducerData(byte[] recordBytes, List<HashMap<String, HashMap<Integer, List<byte[]>>>> topicMapList,
+                               int brokerID, boolean firstTime, int count) {
         this.recordBytes = recordBytes;
         this.topicMapList = topicMapList;
         this.brokerID = brokerID;
         this.firstTime = firstTime;
+        this.count = count;
 
         if(topicMapList.size() == 0){
             for (int i = 0; i < 5; i++) {
@@ -46,6 +49,7 @@ public class ReceiveProducerData implements Runnable{
             partitionMap = new HashMap<>();
             topicList = Collections.synchronizedList(new ArrayList<>());
             topicList.add(recordBytes);
+            count++;
             partitionMap.put(partitionID, topicList);
             this.topicMap.put(topic, partitionMap);
             System.out.println(" ->>> saved first record");
@@ -55,8 +59,8 @@ public class ReceiveProducerData implements Runnable{
                 partitionMap = topicMap.get(topic);
                 if (partitionMap.containsKey(partitionID)) { // if partitionID is in topic, add
                     partitionMap.get(partitionID).add(recordBytes);
+                    count++;
                 } else { // if partitionID is not in topic, create a new inner map
-
                     topicList = Collections.synchronizedList(new ArrayList<>());
                     partitionMap.put(partitionID, topicList);
                     partitionMap.get(partitionID).add(recordBytes);
@@ -65,10 +69,12 @@ public class ReceiveProducerData implements Runnable{
                 topicList = Collections.synchronizedList(new ArrayList<>());
                 partitionMap = new HashMap<>();
                 topicList.add(recordBytes);
+                count++;
                 partitionMap.put(partitionID, topicList);
                 this.topicMap.put(topic, partitionMap);
             }
-            System.out.println(" -> saved to topicMap");
+//            System.out.println(" -> size of topic map: " + count);
+
         }
      //  System.out.println("broker " + brokerID + ": topic map: " + topicMap);
     }

@@ -20,6 +20,7 @@ public class DistributedBroker {
     private static HashMap<String, HashMap<Integer, List<byte[]>>> topicMap;
     private static String brokerConfig;
     static boolean firstTime;
+    static int count = 0;
 
     public DistributedBroker(String hostName, int port, String brokerConfig) {
         this.hostName = hostName;
@@ -107,7 +108,9 @@ public class DistributedBroker {
                         type = "producer"; // producer data send from load balancer directly, so no peerinfo
                         System.out.println(">> this Broker now has connected to producer ");
                         firstTime = true;
-                        Thread th = new Thread(new ReceiveProducerData(buffer, topicMapList, brokerID, firstTime));
+                        Thread th = new Thread(new ReceiveProducerData(buffer, topicMapList, brokerID, firstTime, count++));
+                        System.out.println(" -> size of topic map: " + count);
+
                         firstTime = false;
                         th.start();
                         try {
@@ -122,7 +125,9 @@ public class DistributedBroker {
                 }
                 else{ // when receiving data
                     if (type.equals("producer")) {
-                        Thread th = new Thread(new ReceiveProducerData(buffer, topicMapList, brokerID, firstTime));
+                        Thread th = new Thread(new ReceiveProducerData(buffer, topicMapList, brokerID, firstTime, count++));
+                        System.out.println(" -> size of topic map: " + count);
+
                         th.start();
                         try {
                             th.join();

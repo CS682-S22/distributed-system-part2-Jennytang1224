@@ -27,6 +27,7 @@ public class RunProducer {
         String key;
         int partition = 0;
         int offset;
+        int msgCounter = 0;
         try{
             FileInputStream fstream = new FileInputStream(filepath);
             BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
@@ -56,7 +57,7 @@ public class RunProducer {
                                 .build();
                         // producer send record to broker
                         producer.send(record.toByteArray());
-                        System.out.println("message has been send!");
+                        System.out.println("message " + ++msgCounter + " has been send!");
                     }
                 }
             }

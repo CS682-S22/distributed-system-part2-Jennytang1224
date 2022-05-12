@@ -65,7 +65,7 @@ public class ReceiveProducerMessage implements Runnable{
         line = count + "," + key + "," + topic + "," + partitionID + "," + brokerID;
         byte[] arr = line.getBytes(StandardCharsets.UTF_8);
         try {
-            System.out.println(line);
+          //  System.out.println(line);
             writeBytesToFile(infoOutputPath, arr);
         } catch (IOException e) {
             e.printStackTrace();
@@ -93,6 +93,7 @@ public class ReceiveProducerMessage implements Runnable{
             line1 = this.messageCounter + "," + offsetInMem;
         }
         this.messageCounter++;
+        System.out.println("number of messages: " + messageCounter);
         byte[] arr1 = line1.getBytes(StandardCharsets.UTF_8);
         try {
             writeBytesToFile(offsetOutputPath, arr1);
@@ -107,7 +108,7 @@ public class ReceiveProducerMessage implements Runnable{
     private static void writeBytesToFile(String fileOutput, byte[] buf)
             throws IOException {
         try (FileOutputStream fos = new FileOutputStream(fileOutput, true)) {
-            System.out.println("data saved to info file");
+         //   System.out.println("data saved to info file");
             fos.write(buf);
             fos.write(10); //newline
             fos.flush();

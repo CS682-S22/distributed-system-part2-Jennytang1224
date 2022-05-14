@@ -109,13 +109,13 @@ public class Consumer implements Runnable{
                 if (method.equals("pull")) {
                     if (requestCounter == 0) {//first time
                         //receiveCounter = consumer.getReceiverCounter() + startingPosition - 1;
-                        receiveCounter.set(totalSaved.intValue() + startingPosition - 1);
+                        receiveCounter.set(getReceiverCounter()  + startingPosition - 1);
                         startTime = System.currentTimeMillis();
                         System.out.println("start time: " + startTime);
                         requestCounter++;
                     } else { // not first time
                         // receiveCounter += (consumer.getReceiverCounter() - lastReceivedCounter);
-                        int tmp = receiveCounter.intValue() + totalSaved.intValue() - lastReceivedCounter;
+                        int tmp = receiveCounter.intValue() + getReceiverCounter() - lastReceivedCounter;
                         receiveCounter.set(tmp);
                     }
 
@@ -123,7 +123,7 @@ public class Consumer implements Runnable{
                         max = getMaxPosition();
                     }
                     System.out.println("max: " + max + ", totalSaved : " + (totalSaved));
-                    if (max - start == totalSaved.intValue()) { // get through all brokers
+                    if (max - start == getReceiverCounter()) { // get through all brokers
                         if (requestCounter != 0) { // not first time
                             startingPosition = max + 1;
 
@@ -139,7 +139,7 @@ public class Consumer implements Runnable{
                         }
                     }
                     subscribe(topic, startingPosition);
-                    lastReceivedCounter = totalSaved.intValue();
+                    lastReceivedCounter = getReceiverCounter();
 
                 } else if (method.equals("push")) {
                     if (requestCounter == 0) {//first time
@@ -154,7 +154,7 @@ public class Consumer implements Runnable{
                     }
 
                     if (getMaxPosition() >= max) {
-                        max = getMaxPosition();
+                        max = maxPosition;
                     }
                     System.out.println("max: " + max + ", totalsaved : " + (totalSaved));
                     if (max == totalSaved.intValue()) { // get through all brokers

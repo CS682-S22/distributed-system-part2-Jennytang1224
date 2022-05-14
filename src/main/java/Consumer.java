@@ -102,7 +102,7 @@ public class Consumer implements Runnable{
                 System.out.println("consumer sends first msg to broker with its identity...\n");
 
                 try { // every 2 sec request new data
-                    Thread.sleep(2000);
+                    Thread.sleep(8000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -122,8 +122,8 @@ public class Consumer implements Runnable{
                     if (getMaxPosition() >= max) {
                         max = getMaxPosition();
                     }
-                    System.out.println("max: " + max + ", totalsaved : " + (totalSaved));
-                    if (max == totalSaved.intValue()) { // get through all brokers
+                    System.out.println("max: " + max + ", totalSaved : " + (totalSaved));
+                    if (max - start == totalSaved.intValue()) { // get through all brokers
                         if (requestCounter != 0) { // not first time
                             startingPosition = max + 1;
 
@@ -149,7 +149,7 @@ public class Consumer implements Runnable{
                         requestCounter++;
                     } else { // not first time
                         // receiveCounter += (consumer.getReceiverCounter() - lastReceivedCounter);
-                        int tmp = receiveCounter.intValue() + getReceiverCounter() - lastReceivedCounter;
+                        int tmp = receiveCounter.intValue() + totalSaved.intValue() - lastReceivedCounter;
                         receiveCounter.set(tmp);
                     }
 
@@ -177,7 +177,7 @@ public class Consumer implements Runnable{
                 }
 
                try { // every 2 sec request new data
-                    Thread.sleep(5000);
+                    Thread.sleep(8000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -275,7 +275,7 @@ public class Consumer implements Runnable{
             this.name = name;
             this.port = port;
             this.conn = conn;
-            this.bq = new CS601BlockingQueue<>(100000);
+            this.bq = new CS601BlockingQueue<>(500000);
             this.executor = Executors.newSingleThreadExecutor();
             this.positionCounter = 0;
         }
@@ -318,7 +318,7 @@ public class Consumer implements Runnable{
             //application poll from bq
             while (receiving) {
                 executor.execute(add);
-                m = bq.poll(5);
+                m = bq.poll(3);
                 if (m != null) { // received within timeout
                     //save to file
                     byte[] arr = m.getValue().toByteArray();
@@ -352,7 +352,7 @@ public class Consumer implements Runnable{
     private static void writeBytesToFile(String fileOutput, byte[] buf)
             throws IOException {
         try (FileOutputStream fos = new FileOutputStream(fileOutput, true)) {
-            System.out.println("Application is storing data to the file...");
+         //   System.out.println("Application is storing data to the file...");
             fos.write(buf);
             fos.write(10);
             fos.flush();

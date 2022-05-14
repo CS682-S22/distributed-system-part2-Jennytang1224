@@ -5,6 +5,7 @@ import dsd.pubsub.protos.PeerInfo;
 import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,6 +32,7 @@ public class Consumer implements Runnable{
     static long startTime;
     static long endTime;
     static long duration;
+    int max = 0;
 
     public Consumer(String topic, int startingPosition, String method) {
         // this.brokerLocation = brokerLocation;
@@ -50,7 +52,7 @@ public class Consumer implements Runnable{
         PortMap portMap = (PortMap) maps.get(1);
         int requestCounter = 0;
         int start = 0;
-        int max = 0;
+
         AtomicInteger receiveCounter = new AtomicInteger(0);
         int lastReceivedCounter = 0;
 
@@ -104,11 +106,47 @@ public class Consumer implements Runnable{
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
                 if (method.equals("pull")) {
                     if (requestCounter == 0) {//first time
                         //receiveCounter = consumer.getReceiverCounter() + startingPosition - 1;
+                        receiveCounter.set(totalSaved.intValue() + startingPosition - 1);
+                        startTime = System.currentTimeMillis();
+                        System.out.println("start time: " + startTime);
+                        requestCounter++;
+                    } else { // not first time
+                        // receiveCounter += (consumer.getReceiverCounter() - lastReceivedCounter);
+                        int tmp = receiveCounter.intValue() + totalSaved.intValue() - lastReceivedCounter;
+                        receiveCounter.set(tmp);
+                    }
+
+                    if (getMaxPosition() >= max) {
+                        max = getMaxPosition();
+                    }
+                    System.out.println("max: " + max + ", totalsaved : " + (totalSaved));
+                    if (max == totalSaved.intValue()) { // get through all brokers
+                        if (requestCounter != 0) { // not first time
+                            startingPosition = max + 1;
+
+                        } // else if first time, wilsl use input starting position
+                        if(max != 0) {
+                           // break;
+                            endTime = System.currentTimeMillis();
+                            System.out.println("end time: " + endTime);
+
+                            duration = (endTime - startTime); // millisec
+                            System.out.println("**************Execution time in milliseconds: " + (duration));
+                            System.exit(0);
+                        }
+                    }
+                    subscribe(topic, startingPosition);
+                    lastReceivedCounter = totalSaved.intValue();
+
+                } else if (method.equals("push")) {
+                    if (requestCounter == 0) {//first time
                         receiveCounter.set(getReceiverCounter() + startingPosition - 1);
+                        startTime = System.currentTimeMillis();
+                        System.out.println("start time: " + startTime);
+                        requestCounter++;
                     } else { // not first time
                         // receiveCounter += (consumer.getReceiverCounter() - lastReceivedCounter);
                         int tmp = receiveCounter.intValue() + getReceiverCounter() - lastReceivedCounter;
@@ -118,30 +156,34 @@ public class Consumer implements Runnable{
                     if (getMaxPosition() >= max) {
                         max = getMaxPosition();
                     }
-                    System.out.println("max: " + max + ", receiverCounter: " + (receiveCounter));
-                    if (max - start == receiveCounter.intValue()) { // get through all brokers
-                        if (requestCounter != 0) { // not first time
-                            startingPosition = max + 1;
-
-                        } // else if first time, will use input starting position
+                    System.out.println("max: " + max + ", totalsaved : " + (totalSaved));
+                    if (max == totalSaved.intValue()) { // get through all brokers
+//                        if (requestCounter != 0) { // not first time
+//                            startingPosition = max + 1;
+//
+//                        } // else if first time, will use input starting position
                         if(max != 0) {
-                           // break;
-                            System.exit(0);
+                            // break;
+                            endTime = System.currentTimeMillis();
+                            System.out.println("end time: " + endTime);
 
+                            duration = (endTime - startTime); // millisec
+                            System.out.println("**************Execution time in milliseconds: " + (duration));
+                            System.exit(0);
                         }
                     }
                     subscribe(topic, startingPosition);
-                    lastReceivedCounter = getReceiverCounter();
 
-                } else if (method.equals("push")) {
-                    subscribe(topic, startingPosition);
                 }
-                try { // every 2 sec request new data
+
+               try { // every 2 sec request new data
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
+
+
 //            if (method.equals("pull")) {
 //                requestCounter++;
 //
@@ -233,7 +275,7 @@ public class Consumer implements Runnable{
             this.name = name;
             this.port = port;
             this.conn = conn;
-            this.bq = new CS601BlockingQueue<>(500000);
+            this.bq = new CS601BlockingQueue<>(100000);
             this.executor = Executors.newSingleThreadExecutor();
             this.positionCounter = 0;
         }
@@ -253,9 +295,9 @@ public class Consumer implements Runnable{
                 byte[] result = conn.receive();
                 if (result != null) {
                     try {
-                        if(totalSaved.intValue() == 0){
-                            startTime = System.nanoTime();
-                        }
+//                        if(totalSaved.intValue() == 0){
+//                            startTime = System.currentTimeMillis();
+//                        }
                         bq.put(MessageInfo.Message.parseFrom(result));
                         System.out.println("num of data: " + totalSaved.incrementAndGet());
                         receiverCounter.incrementAndGet();
@@ -276,7 +318,7 @@ public class Consumer implements Runnable{
             //application poll from bq
             while (receiving) {
                 executor.execute(add);
-                m = bq.poll(1);
+                m = bq.poll(5);
                 if (m != null) { // received within timeout
                     //save to file
                     byte[] arr = m.getValue().toByteArray();
@@ -287,15 +329,15 @@ public class Consumer implements Runnable{
                     }
                 }
                 else{ //nothing receives
-                  //  System.out.println("m == null");
+                 //   System.out.println("m == null");
 //                    if(totalSaved.intValue() != 0) {
 //                        break;
 //                    }
                 }
             }
-            endTime = System.nanoTime();
-            duration = (endTime - startTime)/1000000; // sec
-            System.out.println("**************Execution time in seconds: " + duration);
+//            endTime = System.currentTimeMillis();
+//            duration = (endTime - startTime); // millisec
+//            System.out.println("**************Execution time in seconds: " + duration);
 
         }
     }

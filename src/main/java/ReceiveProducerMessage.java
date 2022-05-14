@@ -22,6 +22,7 @@ public class ReceiveProducerMessage implements Runnable{
     private HashMap<String, Integer> counterMap;
     private static HashMap<String, HashMap<Integer, List<byte[]>>> topicMap;
 
+
     public ReceiveProducerMessage( byte[] recordBytes, int messageCounter,
                                    int offsetInMem, int numOfBrokers, int numOfPartitions, HashMap<Integer, Connection> connMap, HashMap<String, Integer> counterMap) {
         this.recordBytes = recordBytes;

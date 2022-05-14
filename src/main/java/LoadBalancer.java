@@ -29,6 +29,11 @@ public class LoadBalancer {
     static HashMap<Integer, Connection> connMap = new HashMap<>();
     private static HashMap<String, Integer> counterMap = new HashMap<>();
     private String brokerConfigFile;
+    static long startTime;
+    static long endTime;
+    static long duration;
+    static boolean firstTime = true;
+
 
 
     public LoadBalancer(String hostName, int port, int numOfBrokers, int numOfPartitions, String brokerConfigFile) {
@@ -40,6 +45,7 @@ public class LoadBalancer {
         this.brokerConfigFile = brokerConfigFile;
 
     }
+
 
 
     /**
@@ -113,6 +119,14 @@ public class LoadBalancer {
                 byte[] buffer = conn.receive();
                 if (buffer == null || buffer.length == 0) {
                     // System.out.println("nothing received/ finished receiving");
+                    if(messageCounter != 0){
+                        if(firstTime) {
+                            endTime = System.currentTimeMillis();
+                            duration = (endTime - startTime); // millisec
+                            System.out.println("**************Execution time in seconds: " + duration);
+                            firstTime = false;
+                        }
+                   }
                 }
                 else {
                     if(counter == 0) { // first mesg is peerinfo
@@ -137,6 +151,9 @@ public class LoadBalancer {
                     }
                     else{ // when receiving data
                         if(type.equals("producer")) {
+                            if(messageCounter == 0){
+                                startTime = System.currentTimeMillis();
+                            }
                             Thread th = new Thread(new ReceiveProducerMessage(buffer, messageCounter,
                                     offsetInMem, numOfBrokers, numOfPartitions, connMap, counterMap));
                             th.start();

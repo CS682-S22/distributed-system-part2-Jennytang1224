@@ -33,6 +33,8 @@ public class Consumer implements Runnable{
     static long endTime;
     static long duration;
     int max = 0;
+    private static Server server;
+    private CS601BlockingQueue<MessageInfo.Message> bq;
 
     public Consumer(String topic, int startingPosition, String method) {
         // this.brokerLocation = brokerLocation;
@@ -42,6 +44,7 @@ public class Consumer implements Runnable{
 //        this.brokerPort = Integer.parseInt(brokerLocation.split(":")[1]);
         this.socket = null;
         this.method = method;
+        bq = new CS601BlockingQueue<>(500000);
     }
 
     @Override
@@ -93,9 +96,36 @@ public class Consumer implements Runnable{
                     System.out.println("(This broker is NOT in use)");
                     return;
                 }
-                newReceiver = new Receiver(peerHostName, peerPort, this.connection);
+                newReceiver = new Receiver(peerHostName, peerPort, this.connection, bq);
                 Thread serverReceiver = new Thread(newReceiver);
                 serverReceiver.start();
+
+//                Thread serverListener = new Thread(() -> {
+//                    boolean running = true;
+//                    try {
+//                        server = new Server(peerPort);
+//                        System.out.println("A broker start listening on port: " + peerPort + "...");
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    while (running) {
+//                        Connection connection = this.server.nextConnection(); // calls accept on server socket to block
+//                        Thread serverReceiver = new Thread(new Receiver(this.hostName, this.port, connection));
+//                        serverReceiver.start();
+//                    }
+//                });
+//                serverListener.start(); // start listening ...
+
+
+
+
+
+
+
+
+
+
+
                 this.connection.send(peerInfo.toByteArray());
                 //save consumer info to filename
                 outputPath = "files/" + type + "_" + peerHostName + "_" + peerPort + "_output";
@@ -139,7 +169,7 @@ public class Consumer implements Runnable{
                         }
                     }
                     subscribe(topic, startingPosition);
-                    lastReceivedCounter = getReceiverCounter();
+                    lastReceivedCounter = totalSaved.intValue();
 
                 } else if (method.equals("push")) {
                     if (requestCounter == 0) {//first time
@@ -266,16 +296,17 @@ public class Consumer implements Runnable{
         private int port;
         private Connection conn;
         boolean receiving = true;
-        private CS601BlockingQueue<MessageInfo.Message> bq;
+
         private ExecutorService executor;
         int positionCounter;
         static AtomicInteger receiverCounter = new AtomicInteger(0);
+        private CS601BlockingQueue<MessageInfo.Message> bq;
 
-        public Receiver(String name, int port, Connection conn) {
+        public Receiver(String name, int port, Connection conn, CS601BlockingQueue<MessageInfo.Message> bq) {
             this.name = name;
             this.port = port;
             this.conn = conn;
-            this.bq = new CS601BlockingQueue<>(500000);
+            this.bq = bq;
             this.executor = Executors.newSingleThreadExecutor();
             this.positionCounter = 0;
         }

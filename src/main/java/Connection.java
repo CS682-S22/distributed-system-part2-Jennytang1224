@@ -78,7 +78,7 @@ public class Connection {
             this.output.write(message);
             this.output.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+          //  e.printStackTrace();
         }
     }
 

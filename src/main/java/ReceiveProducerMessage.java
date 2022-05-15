@@ -69,7 +69,7 @@ public class ReceiveProducerMessage implements Runnable{
           //  System.out.println(line);
             writeBytesToFile(infoOutputPath, arr);
         } catch (IOException e) {
-            e.printStackTrace();
+          //  e.printStackTrace();
         }
 
         // send protobuf with partition ID via assigned broker connection
@@ -99,7 +99,7 @@ public class ReceiveProducerMessage implements Runnable{
         try {
             writeBytesToFile(offsetOutputPath, arr1);
         } catch (IOException e) {
-            e.printStackTrace();
+          //  e.printStackTrace();
         }
     }
 

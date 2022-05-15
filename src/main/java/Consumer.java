@@ -100,32 +100,6 @@ public class Consumer implements Runnable{
                 Thread serverReceiver = new Thread(newReceiver);
                 serverReceiver.start();
 
-//                Thread serverListener = new Thread(() -> {
-//                    boolean running = true;
-//                    try {
-//                        server = new Server(peerPort);
-//                        System.out.println("A broker start listening on port: " + peerPort + "...");
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                    while (running) {
-//                        Connection connection = this.server.nextConnection(); // calls accept on server socket to block
-//                        Thread serverReceiver = new Thread(new Receiver(this.hostName, this.port, connection));
-//                        serverReceiver.start();
-//                    }
-//                });
-//                serverListener.start(); // start listening ...
-
-
-
-
-
-
-
-
-
-
-
                 this.connection.send(peerInfo.toByteArray());
                 //save consumer info to filename
                 outputPath = "files/" + type + "_" + peerHostName + "_" + peerPort + "_output";
@@ -356,7 +330,7 @@ public class Consumer implements Runnable{
                     try {
                         writeBytesToFile(outputPath, arr);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
                 }
                 else{ //nothing receives

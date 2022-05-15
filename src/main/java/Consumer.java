@@ -126,7 +126,7 @@ public class Consumer implements Runnable{
                     if (getMaxPosition() >= max) {
                         max = getMaxPosition();
                     }
-                    System.out.println("max: " + max + ", totalSaved : " + (totalSaved));
+                    System.out.println("max: " + max + ", getReceiverCounter : " + getReceiverCounter());
                     if (max - start == getReceiverCounter()) { // get through all brokers
                         if (requestCounter != 0) { // not first time
                             startingPosition = max + 1;
@@ -143,7 +143,7 @@ public class Consumer implements Runnable{
                         }
                     }
                     subscribe(topic, startingPosition);
-                    lastReceivedCounter = totalSaved.intValue();
+                    lastReceivedCounter = getReceiverCounter();
 
                 } else if (method.equals("push")) {
                     if (requestCounter == 0) {//first time

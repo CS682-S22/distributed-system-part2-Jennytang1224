@@ -283,20 +283,36 @@ public class Utilities {
     /**
      * calculate the partition id
      */
-    public static int CalculatePartition(String key, int numOfPartitions){
+    public static int CalculatePartitionMOD(String key, int numOfPartitions){
         int hashCode = hashKey(key);
         return Math.abs(hashCode % numOfPartitions + 1); // partition starts with 1
     }
 
+    /**
+     * calculate the partition id
+     */
+    public static int CalculatePartitionRANDOM(int numOfPartitions){
+        //  return partition % numOfBrokers; // broker starts with 1
+        Random randomGenerator = new Random();
+        return randomGenerator.nextInt(numOfPartitions) + 1;
+    }
 
     /**
      * calculate broker id
      */
-    public static int CalculateBroker(int partition, int numOfBrokers){
+    public static int CalculateBrokerMOD(String key, int numOfBrokers){
+        //  return partition % numOfBrokers; // broker starts with 1
+        int hashCode = hashKey(key);
+            return Math.abs(hashCode % numOfBrokers + 1); // partition starts with 1
+    }
+
+    /**
+     * calculate broker id
+     */
+    public static int CalculateBrokerRANDOM(int numOfBrokers){
       //  return partition % numOfBrokers; // broker starts with 1
             Random randomGenerator = new Random();
             return randomGenerator.nextInt(numOfBrokers) + 1;
-
     }
 
     /**

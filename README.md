@@ -35,22 +35,23 @@ will producer a short paper to descirbe the result and analyze the data with gra
 
 ## Milestones:
 **By May 10**
-- [ ]  implement push-based brokers
-- [ ]  set breakpoints for runtime measurement
-- [ ]  experiment on pull-based broker and push-based broker
+- [x]  implement push-based brokers
+- [x]  set breakpoints for runtime measurement
+- [x]  experiment on pull-based broker and push-based broker
 
 
 **By May 12**
-- [ ]  experiment on number of partitions
-- [ ]  experiment on number of producers
-- [ ]  experiment on number of brokers
-- [ ]  experiment on number of topics
-- [ ]  experiment on randomly-generate partitionID VS. mod-generated partitionID
+- [x]  experiment on number of data
+- [x]  experiment on number of partitions
+- [x]  experiment on number of brokers
+- [x]  experiment on randomly-generate partitionID VS. mod-generated partitionID
+- [x]  experiment on consumer runtime
+- [x]  experiment on loadbalancer runtime
 
 
 **By May 15**
-- [ ]  generate graphs 
-- [ ]  write short paper
+- [x]  generate graphs 
+- [x]  write short paper
 
 
 

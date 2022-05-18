@@ -120,7 +120,7 @@ public class LoadBalancer {
                 if (buffer == null || buffer.length == 0) {
                     // System.out.println("nothing received/ finished receiving");
                     if(messageCounter != 0){
-                        if(firstTime) {
+                        if(firstTime) { // when first time nothing receives, end timer
                             endTime = System.currentTimeMillis();
                             duration = (endTime - startTime); // millisec
                             System.out.println("**************Execution time in seconds: " + duration);

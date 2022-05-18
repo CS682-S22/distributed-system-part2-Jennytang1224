@@ -5,11 +5,6 @@ import java.util.List;
  */
 public class RunBroker {
     public static void main(String[] args){
-        //usage:
-//        if(!Utilities.validateArgsBroker(args)){
-//            System.exit(-1);
-//        }
-
         String brokerConfigFile = Utilities.brokerConfigFile;
         List<Object> maps = Utilities.readBrokerConfig();
         IPMap ipMap = (IPMap) maps.get(0);

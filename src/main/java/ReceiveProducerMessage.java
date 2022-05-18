@@ -59,13 +59,14 @@ public class ReceiveProducerMessage implements Runnable{
 
         // calculate partitionID ba & brokerID sed on key
         int partitionID = Utilities.CalculatePartitionMOD(key, numOfPartitions);
-       // int partitionID = Utilities.CalculatePartitionRANDOM(numOfPartitions);
+        //int partitionID = Utilities.CalculatePartitionRANDOM(numOfPartitions);
         int brokerID = Utilities.CalculateBrokerRANDOM(numOfBrokers);
-       // int brokerID = Utilities.CalculateBrokerMOD(key, numOfBrokers);
+        //int brokerID = Utilities.CalculateBrokerMOD(key, numOfBrokers);
 
         // save intermediate file:  msgID, key, topic, partitionID, BrokerID
         String line;
         line = count + "," + key + "," + topic + "," + partitionID + "," + brokerID;
+
         byte[] arr = line.getBytes(StandardCharsets.UTF_8);
         try {
           //  System.out.println(line);

@@ -5,11 +5,6 @@ import java.util.List;
  */
 public class RunLoadBalancer {
     public static void main(String[] args){
-        // 3 5 (3 broker and 5 partitions)
-//        if(!Utilities.validateArgsLoadBalancer(args)){
-//            System.exit(-1);
-//        }
-
         int numOfBrokers = Integer.parseInt(args[0]);
         int numOfPartitions = Integer.parseInt(args[1]);
         String brokerConfigFile = Utilities.brokerConfigFile;

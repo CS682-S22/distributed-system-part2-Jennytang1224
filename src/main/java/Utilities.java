@@ -303,7 +303,7 @@ public class Utilities {
     public static int CalculateBrokerMOD(String key, int numOfBrokers){
         //  return partition % numOfBrokers; // broker starts with 1
         int hashCode = hashKey(key);
-            return Math.abs(hashCode % numOfBrokers + 1); // partition starts with 1
+        return Math.abs(hashCode % numOfBrokers + 1); // partition starts with 1
     }
 
     /**

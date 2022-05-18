@@ -1,11 +1,8 @@
 import com.google.protobuf.InvalidProtocolBufferException;
 import dsd.pubsub.protos.MessageInfo;
 import dsd.pubsub.protos.PeerInfo;
-
-import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,11 +34,8 @@ public class Consumer implements Runnable{
     private CS601BlockingQueue<MessageInfo.Message> bq;
 
     public Consumer(String topic, int startingPosition, String method) {
-        // this.brokerLocation = brokerLocation;
         this.topic = topic;
         this.startingPosition = startingPosition;
-//        this.brokerHostName = brokerLocation.split(":")[0];
-//        this.brokerPort = Integer.parseInt(brokerLocation.split(":")[1]);
         this.socket = null;
         this.method = method;
         bq = new CS601BlockingQueue<>(500000);
@@ -60,160 +54,123 @@ public class Consumer implements Runnable{
         int lastReceivedCounter = 0;
 
         //connect to each broker and ask for data
-      //  while(true) {
-            for (int i = 1; i <= Utilities.numOfBrokersInSys; i++) { // loop though num of brokers
-                // Connect to the consumer
-                //                System.out.println("\nStarting position: " + startingPosition);
-                String brokerHostName = ipMap.getIpById(String.valueOf(i));
-                int brokerPort = Integer.parseInt(portMap.getPortById(String.valueOf(i)));
-                String brokerLocation = brokerHostName + ":" + brokerPort;
+        for (int i = 1; i <= Utilities.numOfBrokersInSys; i++) { // loop though num of brokers
+            // Connect to the consumer
+            //                System.out.println("\nStarting position: " + startingPosition);
+            String brokerHostName = ipMap.getIpById(String.valueOf(i));
+            int brokerPort = Integer.parseInt(portMap.getPortById(String.valueOf(i)));
+            String brokerLocation = brokerHostName + ":" + brokerPort;
 
-                //connect to each broker
-                try {
-                    this.socket = new Socket(brokerHostName, brokerPort);
-                    this.connection = new Connection(this.socket);
-                    this.input = new DataInputStream(new BufferedInputStream(this.socket.getInputStream()));
-                    this.output = new DataOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
-                } catch (IOException e) {
-                    // e.printStackTrace();
-                }
-                System.out.println("\n*** this consumer is connecting to broker " + brokerLocation + " ***");
+            //connect to each broker
+            try {
+                this.socket = new Socket(brokerHostName, brokerPort);
+                this.connection = new Connection(this.socket);
+                this.input = new DataInputStream(new BufferedInputStream(this.socket.getInputStream()));
+                this.output = new DataOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
+            } catch (IOException e) {
+                // e.printStackTrace();
+            }
+            System.out.println("\n*** this consumer is connecting to broker " + brokerLocation + " ***");
 
-                List<Object> maps1 = Utilities.readConfig();
-                IPMap ipMap1 = (IPMap) maps1.get(0);
-                PortMap portMap1 = (PortMap) maps1.get(1);
-                String peerHostName = Utilities.getHostName();
-                // int peerPort = Integer.parseInt(portMap1.getPortById(ipMap1.getIdByIP(peerHostName)));
-                int peerPort = 1413;
-                // send peer info to each broker
-                String type = "consumer " + method;
-                PeerInfo.Peer peerInfo = PeerInfo.Peer.newBuilder()
-                        .setType(type)
-                        .setHostName(peerHostName)
-                        .setPortNumber(peerPort)
-                        .build();
-                if (connection == null) {
-                    System.out.println("(This broker is NOT in use)");
-                    return;
-                }
-                newReceiver = new Receiver(peerHostName, peerPort, this.connection, bq);
-                Thread serverReceiver = new Thread(newReceiver);
-                serverReceiver.start();
+            List<Object> maps1 = Utilities.readConfig();
+            IPMap ipMap1 = (IPMap) maps1.get(0);
+            PortMap portMap1 = (PortMap) maps1.get(1);
+            String peerHostName = Utilities.getHostName();
+            // int peerPort = Integer.parseInt(portMap1.getPortById(ipMap1.getIdByIP(peerHostName)));
+            int peerPort = 1413;
+            // send peer info to each broker
+            String type = "consumer " + method;
+            PeerInfo.Peer peerInfo = PeerInfo.Peer.newBuilder()
+                    .setType(type)
+                    .setHostName(peerHostName)
+                    .setPortNumber(peerPort)
+                    .build();
+            if (connection == null) {
+                System.out.println("(This broker is NOT in use)");
+                return;
+            }
+            newReceiver = new Receiver(peerHostName, peerPort, this.connection, bq);
+            Thread serverReceiver = new Thread(newReceiver);
+            serverReceiver.start();
 
-                this.connection.send(peerInfo.toByteArray());
-                //save consumer info to filename
-                outputPath = "files/" + type + "_" + peerHostName + "_" + peerPort + "_output";
-                System.out.println("consumer sends first msg to broker with its identity...\n");
+            this.connection.send(peerInfo.toByteArray());
+            //save consumer info to filename
+            outputPath = "files/" + type + "_" + peerHostName + "_" + peerPort + "_output";
+            System.out.println("consumer sends first msg to broker with its identity...\n");
 
-                try { // every 2 sec request new data
-                    Thread.sleep(8000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (method.equals("pull")) {
-                    if (requestCounter == 0) {//first time
-                        //receiveCounter = consumer.getReceiverCounter() + startingPosition - 1;
-                        receiveCounter.set(getReceiverCounter()  + startingPosition - 1);
-                        startTime = System.currentTimeMillis();
-                        System.out.println("start time: " + startTime);
-                        requestCounter++;
-                    } else { // not first time
-                        // receiveCounter += (consumer.getReceiverCounter() - lastReceivedCounter);
-                        int tmp = receiveCounter.intValue() + getReceiverCounter() - lastReceivedCounter;
-                        receiveCounter.set(tmp);
-                    }
-
-                    if (getMaxPosition() >= max) {
-                        max = getMaxPosition();
-                    }
-                    System.out.println("max: " + max + ", getReceiverCounter : " + getReceiverCounter());
-                    if (max - start == getReceiverCounter()) { // get through all brokers
-                        if (requestCounter != 0) { // not first time
-                            startingPosition = max + 1;
-
-                        } // else if first time, wilsl use input starting position
-                        if(max != 0) {
-                           // break;
-                            endTime = System.currentTimeMillis();
-                            System.out.println("end time: " + endTime);
-
-                            duration = (endTime - startTime); // millisec
-                            System.out.println("**************Execution time in milliseconds: " + (duration));
-                            System.exit(0);
-                        }
-                    }
-                    subscribe(topic, startingPosition);
-                    lastReceivedCounter = getReceiverCounter();
-
-                } else if (method.equals("push")) {
-                    if (requestCounter == 0) {//first time
-                        receiveCounter.set(getReceiverCounter() + startingPosition - 1);
-                        startTime = System.currentTimeMillis();
-                        System.out.println("start time: " + startTime);
-                        requestCounter++;
-                    } else { // not first time
-                        // receiveCounter += (consumer.getReceiverCounter() - lastReceivedCounter);
-                        int tmp = receiveCounter.intValue() + totalSaved.intValue() - lastReceivedCounter;
-                        receiveCounter.set(tmp);
-                    }
-
-                    if (getMaxPosition() >= max) {
-                        max = maxPosition;
-                    }
-                    System.out.println("max: " + max + ", totalsaved : " + (totalSaved));
-                    if (max == totalSaved.intValue()) { // get through all brokers
-//                        if (requestCounter != 0) { // not first time
-//                            startingPosition = max + 1;
-//
-//                        } // else if first time, will use input starting position
-                        if(max != 0) {
-                            // break;
-                            endTime = System.currentTimeMillis();
-                            System.out.println("end time: " + endTime);
-
-                            duration = (endTime - startTime); // millisec
-                            System.out.println("**************Execution time in milliseconds: " + (duration));
-                            System.exit(0);
-                        }
-                    }
-                    subscribe(topic, startingPosition);
-
+            try { // every 2 sec request new data
+                Thread.sleep(8000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (method.equals("pull")) {
+                if (requestCounter == 0) {//first time
+                    receiveCounter.set(getReceiverCounter()  + startingPosition - 1);
+                    startTime = System.currentTimeMillis();
+                    System.out.println("start time: " + startTime);
+                    requestCounter++;
+                } else { // not first time
+                    int tmp = receiveCounter.intValue() + getReceiverCounter() - lastReceivedCounter;
+                    receiveCounter.set(tmp);
                 }
 
-               try { // every 2 sec request new data
-                    Thread.sleep(8000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if (getMaxPosition() >= max) {
+                    max = getMaxPosition();
                 }
+                System.out.println("max: " + max + ", getReceiverCounter : " + getReceiverCounter());
+                if (max - start == getReceiverCounter()) { // get through all brokers
+                    if (requestCounter != 0) { // not first time
+                        startingPosition = max + 1;
+
+                    } // else if first time, wilsl use input starting position
+                    if(max != 0) {
+                        endTime = System.currentTimeMillis();
+                        System.out.println("end time: " + endTime);
+
+                        duration = (endTime - startTime); // millisec
+                        System.out.println("**************Execution time in milliseconds: " + (duration));
+                        System.exit(0);
+                    }
+                }
+                subscribe(topic, startingPosition);
+                lastReceivedCounter = getReceiverCounter();
+
+            } else if (method.equals("push")) {
+                if (requestCounter == 0) {//first time
+                    receiveCounter.set(getReceiverCounter() + startingPosition - 1);
+                    startTime = System.currentTimeMillis();
+                    System.out.println("start time: " + startTime);
+                    requestCounter++;
+                } else { // not first time
+                    int tmp = receiveCounter.intValue() + totalSaved.intValue() - lastReceivedCounter;
+                    receiveCounter.set(tmp);
+                }
+
+                if (getMaxPosition() >= max) {
+                    max = maxPosition;
+                }
+                System.out.println("max: " + max + ", totalsaved : " + (totalSaved));
+                if (max == totalSaved.intValue()) { // get through all brokers
+                    if(max != 0) {
+                        // break;
+                        endTime = System.currentTimeMillis();
+                        System.out.println("end time: " + endTime);
+
+                        duration = (endTime - startTime); // millisec
+                        System.out.println("**************Execution time in milliseconds: " + (duration));
+                        System.exit(0);
+                    }
+                }
+                subscribe(topic, startingPosition);
+
             }
 
-
-//            if (method.equals("pull")) {
-//                requestCounter++;
-//
-//                System.out.println("outside for loop: " + "max: " + max + ", receiverCounter: " + receiveCounter);
-//                if (max - start != receiveCounter.intValue()) {
-//                    // miss brokers -> no increment on starting position
-//                } else {
-//                    if (requestCounter != 0) { // not first time
-//                        startingPosition = max + 1;
-//
-//                    } // else if first time, will use input starting position
-//                    break;
-//                }
-//
-//            }
-//            else if (method.equals("push")) {
-//                try { // every 2 sec request new data
-//                    Thread.sleep(5000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                break;
-//            }
-    //    }
-
-
+           try { // every 2 sec request new data
+                Thread.sleep(8000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -334,16 +291,8 @@ public class Consumer implements Runnable{
                     }
                 }
                 else{ //nothing receives
-                 //   System.out.println("m == null");
-//                    if(totalSaved.intValue() != 0) {
-//                        break;
-//                    }
                 }
             }
-//            endTime = System.currentTimeMillis();
-//            duration = (endTime - startTime); // millisec
-//            System.out.println("**************Execution time in seconds: " + duration);
-
         }
     }
 

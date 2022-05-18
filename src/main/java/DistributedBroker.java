@@ -2,8 +2,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import dsd.pubsub.protos.PeerInfo;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.Collections;
 /**
  * broker class
  */
@@ -16,7 +14,6 @@ public class DistributedBroker {
     private static int peerPort;
     private static int messageCounter = 0;
     private static List<HashMap<String,HashMap<Integer, List<byte[]>>>> topicMapList = new ArrayList<>();
-    //private static List<HashMap<String,HashMap<Integer, CopyOnWriteArrayList<byte[]>>>> topicMapList = new ArrayList<>();
     private static HashMap<String, HashMap<Integer, List<byte[]>>> topicMap;
     private static String brokerConfig;
     static boolean firstTime;

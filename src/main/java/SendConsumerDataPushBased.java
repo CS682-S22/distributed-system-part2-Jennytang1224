@@ -64,11 +64,6 @@ public class SendConsumerDataPushBased implements Runnable{
                     } else {
                         partitionMap = topicMap.get(topic);
                         System.out.println("there are " + partitionMap.size() + " partitions in this consumer with topic: " + topic);
-//                        try {
-//                            Thread.sleep(1000);
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
                         for (Map.Entry<Integer, List<byte[]>> entry : partitionMap.entrySet()) {
                             topicList = entry.getValue();
                             // start getting the all record from this topic from starting position
@@ -88,11 +83,6 @@ public class SendConsumerDataPushBased implements Runnable{
                                         lastSentMessageID = id;
                                     }
                                     System.out.println("New data in partition: " + entry.getKey() + ", and " + ++msgCounter + " messages has been sent to the consumer \n");
-//                                    try {
-//                                        Thread.sleep(1000);
-//                                    } catch (InterruptedException e) {
-//                                        e.printStackTrace();
-//                                    }
                                 }
                                // System.out.println("no new data in partition: " + entry.getKey() + "\n");
                             }
@@ -160,11 +150,6 @@ public class SendConsumerDataPushBased implements Runnable{
                 counter++;
                 currentSize = 0;
             }
-//            try {
-//                Thread.sleep(2000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
         }
     }
 }

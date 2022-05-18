@@ -35,8 +35,8 @@ public class Producer {
         IPMap ipMap = (IPMap) maps.get(0);
         PortMap portMap = (PortMap) maps.get(1);
         String peerHostName = Utilities.getHostName();
-        //int peerPort = Integer.parseInt(portMap.getPortById(ipMap.getIdByIP(peerHostName)));
-        int peerPort = 1412;
+        int peerPort = Integer.parseInt(portMap.getPortById(ipMap.getIdByIP(peerHostName)));
+        //int peerPort = 1412;
 
         PeerInfo.Peer peerInfo = PeerInfo.Peer.newBuilder()
                 .setType(type)

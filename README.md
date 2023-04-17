@@ -1,5 +1,5 @@
 
-# Pub-sub distributed system part2
+# Pub-sub Distributed System Part2
 
 This project is an extention on Pub-sub distributed system part1. I'm adding two additional features:
     

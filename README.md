@@ -6,10 +6,18 @@ This project is an extention on Pub-sub distributed system part1.
 You can find part 1 here: https://github.com/CS682-S22/distributed-system-part1-Jennytang1224
 
 I'm adding two additional features in this project:
-    
-**1. adding push-based broker**
 
-**2. implement performance analysis**
+**1. Bully Election**
+
+**2. Heartbeat message**
+
+**3. Membership table**
+
+**4. Replication: both asynchronous and synchronous replications**
+    
+**5. Push-based broker**
+
+**6. Performance analysis**
 
 ## Current System:
 The existing program is a simple version of Kafka pub-sub system: 
@@ -19,7 +27,7 @@ The existing program is a simple version of Kafka pub-sub system:
  - consumers: requesting data from brokers given the topic and starting position.
 
 ##  Push-based Broker
-Currently I have pull-based broker with partition implemented. I will add a push-based version as this was a 10pt additional feature in project 2 that I haven't implemented.
+Currently I have pull-based broker with partition implemented. 
 
 ##  Performance Analysis
 **Variables:**

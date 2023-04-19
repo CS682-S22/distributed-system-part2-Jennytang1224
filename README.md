@@ -1,7 +1,11 @@
 
 # Pub-sub Distributed System Part2
 
-This project is an extention on Pub-sub distributed system part1. I'm adding two additional features:
+This project is an extention on Pub-sub distributed system part1. 
+
+You can find part 1 here: https://github.com/CS682-S22/distributed-system-part1-Jennytang1224
+
+I'm adding two additional features in this project:
     
 **1. adding push-based broker**
 
